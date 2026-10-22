@@ -1,0 +1,7 @@
+# Backend (Activity 10)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.db

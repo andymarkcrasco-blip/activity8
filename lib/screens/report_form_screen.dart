@@ -13,14 +13,19 @@ import '../widgets/app_text_field.dart';
 enum ReportUiState { idle, loading, success, empty, error }
 
 /// Activity 9 - Report Form screen for the EventVenue Caraga system.
+/// Activity 10 - the reports are now read from and written to PostgreSQL
+/// through the FastAPI REST API (see lib/services/report_service.dart).
 ///
 /// A user (client or vendor) files a report about a venue listing,
 /// a booking problem, or a suggestion. The form reuses the shared
 /// widgets from Activity 8 (app_button.dart, app_text_field.dart)
 /// and shows four real asynchronous responses:
-/// LOADING -> SUCCESS | ERROR, and EMPTY when no reports exist.
+/// LOADING -> SUCCESS | ERROR, and EMPTY when the database has no reports.
 class ReportFormScreen extends StatefulWidget {
-  const ReportFormScreen({super.key});
+  /// Optional service override, used by the automated tests.
+  final ReportService? service;
+
+  const ReportFormScreen({super.key, this.service});
 
   @override
   State<ReportFormScreen> createState() => _ReportFormScreenState();
@@ -34,22 +39,25 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   final TextEditingController _descriptionCtrl = TextEditingController();
   final TextEditingController _contactCtrl = TextEditingController();
 
-  final ReportService _reportService = ReportService();
+  /// Created from the widget so tests can inject a mocked service.
+  late final ReportService _reportService = widget.service ?? ReportService();
 
   String? _category;
   String? _location;
 
-  /// Demo switch so the group can reproduce the ERROR state live.
+  /// Demo switch so the group can reproduce the ERROR state live without
+  /// having to stop the server.
   bool _simulateFailure = false;
 
   ReportUiState _uiState = ReportUiState.idle;
   String _message = '';
   List<ReportModel> _reports = <ReportModel>[];
+  bool _backendOnline = false;
 
   @override
   void initState() {
     super.initState();
-    _refreshReports();
+    _loadReports();
   }
 
   @override
@@ -60,16 +68,39 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     super.dispose();
   }
 
-  void _refreshReports() {
-    setState(() {
-      _reports = _reportService.savedReports;
-      if (_reports.isEmpty && _uiState != ReportUiState.loading) {
-        _uiState = ReportUiState.empty;
-      }
-    });
+  /// Reads the reports from PostgreSQL through the REST API.
+  ///
+  /// [silent] refreshes the list without touching the visible state, which is
+  /// what we use after a successful submit so the SUCCESS message stays on
+  /// screen instead of being replaced by the loading state.
+  Future<void> _loadReports({bool silent = false}) async {
+    if (!silent) {
+      setState(() => _uiState = ReportUiState.loading);
+    }
+    try {
+      final list = await _reportService.fetchReports();
+      if (!mounted) return;
+      setState(() {
+        _reports = list;
+        _backendOnline = true;
+        if (silent) return;
+        _uiState = list.isEmpty ? ReportUiState.empty : ReportUiState.success;
+        _message = list.isEmpty
+            ? ''
+            : '${list.length} report(s) loaded from PostgreSQL.';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _backendOnline = false;
+        if (silent) return;
+        _uiState = ReportUiState.error;
+        _message = '$e';
+      });
+    }
   }
 
-  /// Validates the form, then runs the simulated async submit.
+  /// Validates the form, then sends the report to the REST API.
   Future<void> submitReport() async {
     // Prevent duplicate submissions.
     if (_uiState == ReportUiState.loading) return;
@@ -77,7 +108,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
     setState(() {
       _uiState = ReportUiState.loading;
-      _message = 'Sending your report to the EventVenue Caraga team...';
+      _message = 'Sending your report to the EventVenue Caraga server...';
     });
 
     try {
@@ -87,13 +118,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
         location: _location!,
         description: _descriptionCtrl.text.trim(),
         contact: _contactCtrl.text.trim(),
-        createdAt: DateTime.now(),
-        reference: 'EV-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
       );
 
-      // Simulated async request (Future.delayed) - the real REST API
-      // (PHP + MySQL) will replace this in the next phase.
-      await _reportService.submitReport(
+      // Real request to POST /api/reports -> PostgreSQL.
+      final saved = await _reportService.submitReport(
         report,
         simulateFailure: _simulateFailure,
       );
@@ -101,8 +129,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       if (!mounted) return;
       setState(() {
         _uiState = ReportUiState.success;
-        _message =
-            'Report ${report.reference} saved successfully (simulated response).';
+        _backendOnline = true;
+        _message = saved.reference.isEmpty
+            ? 'Report saved successfully.'
+            : 'Report ${saved.reference} saved to PostgreSQL.';
       });
       _formKey.currentState!.reset();
       _titleCtrl.clear();
@@ -111,8 +141,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       setState(() {
         _category = null;
         _location = null;
-        _reports = _reportService.savedReports;
       });
+      await _loadReports(silent: true);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -139,6 +169,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          const SizedBox(height: 8),
+          _buildBackendChip(),
           const SizedBox(height: 16),
 
           // ---------------- FORM ----------------
@@ -262,9 +294,18 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
           _buildStateView(),
 
           const SizedBox(height: 20),
-          Text('Submitted Reports (${_reports.length})',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Submitted Reports (${_reports.length})',
+                  style: Theme.of(context).textTheme.titleMedium),
+              TextButton.icon(
+                onPressed: isLoading ? null : _loadReports,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Reload'),
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           if (_reports.isEmpty)
             const AppCard(
@@ -294,6 +335,44 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     );
   }
 
+  /// Shows whether the REST API and PostgreSQL are reachable.
+  Widget _buildBackendChip() {
+    final online = _backendOnline;
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: (online ? Colors.green : Colors.red).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: (online ? Colors.green : Colors.red).withValues(alpha: 0.4),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              online ? Icons.cloud_done : Icons.cloud_off,
+              size: 16,
+              color: online ? Colors.green.shade700 : Colors.red.shade700,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              online
+                  ? 'REST API connected - PostgreSQL online'
+                  : 'REST API offline - start backend/main.py',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: online ? Colors.green.shade700 : Colors.red.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Builds the visible response for the current [ReportUiState].
   Widget _buildStateView() {
     switch (_uiState) {
@@ -303,7 +382,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
           icon: Icons.hourglass_top,
           title: 'LOADING - Submitting your report',
           message:
-              'Simulated async request is pending. Please wait and do not submit twice.',
+              'The request is being processed by the server. Please wait and do not submit twice.',
         );
 
       case ReportUiState.success:
@@ -338,7 +417,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
           icon: Icons.inbox,
           title: 'EMPTY - No report records',
           message:
-              'There are no reports to display yet. Fill in the form above to create the first one.',
+              'There are no reports in the database yet. Fill in the form above to create the first one.',
         );
     }
   }
