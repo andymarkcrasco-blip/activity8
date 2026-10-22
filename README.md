@@ -8,13 +8,9 @@ Short description: Clean Flutter Web baseline with Home / Login / Dashboard navi
 
 ## Group Members and Roles
 
-> TODO: ilisi ni sa imong tinuod nga ngalan/groupo before mag-pass.
-
 | Name | Role |
 |------|------|
-| Your Name Here | Developer / Documentation |
-| Member 2 | UI / Testing |
-| Member 3 | Git / Deployment |
+| andymarkcrasco | Developer / Documentation / UI / Testing |
 
 Checkpoint date: October 2026
 
