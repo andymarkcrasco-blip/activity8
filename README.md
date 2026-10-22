@@ -172,4 +172,6 @@ All screenshots are in `screenshots/` and are embedded in `ACTIVITY9_EVIDENCE_RE
 
 ## How This Grows Into the Proposed System
 
-The Activity 8/9 project is the Sprint 1 / first increment baseline of EventVenue Caraga: clean setup + version control + working shell + reusable components + real asynchronous UI states. Next increments replace `report_service.dart`'s simulated delay with the real REST API (PHP + MySQL) call, persist reports in PostgreSQL, and add role-based pages (client / vendor / admin) without restructuring the folders.
+The Activity 8/9 project is the Sprint 1 / first increment baseline of EventVenue Caraga: clean setup + version control + working shell + reusable components + real asynchronous UI states. Next increments replace `report_service.dart`'s simulated delay with the real REST API call (instructor-approved backend, e.g. FastAPI), persist reports in PostgreSQL (IT 108), and add role-based pages (client / vendor / admin) without restructuring the folders.
+
+Official project title (Activity 8 brief): **Event Venue and Micro-Vendor Finder With Machine Learning-Based Sentiment Analytics in Caraga Region**
