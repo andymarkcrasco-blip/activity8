@@ -4,7 +4,8 @@ import '../constants/app_constants.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 
-/// Visible home page - first checkpoint requirement.
+/// Visible home page - first checkpoint requirement (Activity 8).
+/// Activity 9 adds the link to the Report Form screen.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -23,6 +24,12 @@ class HomeScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
+          const SizedBox(height: 4),
+          Text(
+            AppConstants.activity,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 16),
           const AppCard(
             title: 'Clear Setup',
@@ -39,6 +46,12 @@ class HomeScreen extends StatelessWidget {
             body: 'Home, Login, and Dashboard pages connected via go_router navigation.',
             icon: Icons.navigation,
           ),
+          const AppCard(
+            title: 'Reusable Widgets',
+            body:
+                'AppButton and AppTextField are shared by the login screen and the report form.',
+            icon: Icons.widgets,
+          ),
           const SizedBox(height: 16),
           AppButton(
             label: 'Go to Login',
@@ -50,6 +63,13 @@ class HomeScreen extends StatelessWidget {
             label: 'Go to Dashboard',
             icon: Icons.dashboard,
             onPressed: () => context.go(AppConstants.dashboardRoute),
+          ),
+          const SizedBox(height: 8),
+          // Activity 9: entry point to the new Report Form screen.
+          AppButton(
+            label: 'Go to Report Form',
+            icon: Icons.report_problem,
+            onPressed: () => context.go(AppConstants.reportRoute),
           ),
         ],
       ),

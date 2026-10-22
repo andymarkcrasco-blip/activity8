@@ -3,10 +3,12 @@ import '../constants/app_constants.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/report_form_screen.dart';
 import '../widgets/app_shell.dart';
 
 /// Centralized navigation for the initialization shell.
 /// Proves: Home <-> Login <-> Dashboard page transitions work.
+/// Activity 9 adds the Report Form route to the same navigation shell.
 class AppRoutes {
   static final GoRouter router = GoRouter(
     initialLocation: AppConstants.homeRoute,
@@ -25,6 +27,11 @@ class AppRoutes {
           GoRoute(
             path: AppConstants.dashboardRoute,
             builder: (context, state) => const DashboardScreen(),
+          ),
+          // NEW in Activity 9 - Report Form screen.
+          GoRoute(
+            path: AppConstants.reportRoute,
+            builder: (context, state) => const ReportFormScreen(),
           ),
         ],
       ),

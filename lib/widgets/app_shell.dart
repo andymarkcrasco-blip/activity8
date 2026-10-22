@@ -4,6 +4,7 @@ import '../constants/app_constants.dart';
 
 /// Navigation shell: consistent header + menu buttons on every page.
 /// This satisfies the "Navigation Shell" requirement in Lesson 8.
+/// Activity 9 adds the Report Form to the shell menu.
 class AppShell extends StatelessWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
@@ -22,7 +23,7 @@ class AppShell extends StatelessWidget {
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.deepPurple),
               child: Text(
-                'Activity 8\nIT 110 - Flutter Web',
+                'Activity 8/9\nIT 110 - Flutter Web',
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
@@ -50,6 +51,14 @@ class AppShell extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.report_problem),
+              title: const Text('Report Form'),
+              onTap: () {
+                context.go(AppConstants.reportRoute);
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),
@@ -60,21 +69,26 @@ class AppShell extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   _NavButton(label: 'Home', route: AppConstants.homeRoute),
-                  const SizedBox(width: 8),
                   _NavButton(label: 'Login', route: AppConstants.loginRoute),
-                  const SizedBox(width: 8),
                   _NavButton(label: 'Dashboard', route: AppConstants.dashboardRoute),
+                  _NavButton(label: 'Report', route: AppConstants.reportRoute),
                 ],
               ),
             ),
           ),
-          Expanded(child: Center(child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Padding(padding: const EdgeInsets.all(16), child: child),
-          ))),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Padding(padding: const EdgeInsets.all(16), child: child),
+              ),
+            ),
+          ),
         ],
       ),
     );
