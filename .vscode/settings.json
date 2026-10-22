@@ -1,0 +1,11 @@
+{
+    "editor.formatOnSave": true,
+    "editor.rulers": [90],
+    "dart.lineLength": 90,
+    "dart.previewFlutterUiGuides": true,
+    "files.exclude": {
+        "**/.dart_tool": true,
+        "**/build": true
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
