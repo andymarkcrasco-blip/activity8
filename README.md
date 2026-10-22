@@ -137,7 +137,7 @@ The test file covers the Home shell, the Home -> Report Form navigation, the EMP
 git init
 git add .
 git commit -m "Initial Flutter Web project - home/login/navigation shell"
-git remote add origin <REMOTE-URL>
+git remote add origin https://github.com/andymarkcrasco-blip/activity8.git
 git branch -M main
 git push -u origin main
 ```
@@ -150,9 +150,10 @@ git commit -m "Add report form and Flutter UI states"
 git push
 ```
 
-- GitHub repo: _TODO: paste link here_
-- Checkpoint 1 (Activity 8): `Initial Flutter Web project - home/login/navigation shell`
-- Checkpoint 2 (Activity 9): `Add report form and Flutter UI states`
+- GitHub repo: **https://github.com/andymarkcrasco-blip/activity8**
+- Checkpoint 1 (Activity 8): `c7497c3` — Initial Flutter Web project - home/login/navigation shell
+- Checkpoint 2 (Activity 9): `1a14bf0` — Update group member to andymarkcrasco
+- Checkpoint 3 (Activity 9): `1ef6ac3` — Add report form and Flutter UI states
 
 ## Evidence Screenshots
 
